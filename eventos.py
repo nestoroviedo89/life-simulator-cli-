@@ -136,6 +136,5 @@ def aplicar_efectos(atributos, efectos):
     for key, valor in efectos.items():
         atributos[key] += valor
     if atributos["fisico"] <= 0:
-        return Fals
-        e
+        return False
     return True

@@ -71,4 +71,3 @@ def listar_partidas():
 def cargar_partida(nombre):
     partidas = cargar_todas_partidas()
     return partidas.get(nombre)
-    
