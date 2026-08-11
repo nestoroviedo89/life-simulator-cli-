@@ -40,7 +40,6 @@ ARCHIVO_PARTIDAS = "/storage/emulated/0/Download/life_sim_partidas.json"
 
 
 def guardar_partida(nombre, datos):
-    """Guarda una partida con un nombre."""
     partidas = cargar_todas_partidas()
     partidas[nombre] = datos
     with open(ARCHIVO_PARTIDAS, "w", encoding="utf-8") as f:
@@ -49,7 +48,6 @@ def guardar_partida(nombre, datos):
 
 
 def cargar_todas_partidas():
-    """Carga el diccionario de todas las partidas guardadas."""
     if not os.path.exists(ARCHIVO_PARTIDAS):
         return {}
     with open(ARCHIVO_PARTIDAS, "r", encoding="utf-8") as f:
@@ -57,7 +55,6 @@ def cargar_todas_partidas():
 
 
 def listar_partidas():
-    """Muestra las partidas guardadas."""
     partidas = cargar_todas_partidas()
     if not partidas:
         print(f"\n{AMARILLO}No hay partidas guardadas.{RESET}")
@@ -66,11 +63,12 @@ def listar_partidas():
     for i, nombre in enumerate(partidas.keys(), 1):
         p = partidas[nombre]
         estado = "💀 Muerto" if p.get("muerto") else "🟢 Vivo"
-        print(f"  {i}. {nombre} — {estado} a los {p['edad']} años")
+        print(f"  {CYAN}[{i}]{RESET} {nombre} — {estado} a los {p['edad']} años")
+    print(f"\n{BLANCO}Escribe el número para cargar.{RESET}")
     return list(partidas.keys())
 
 
 def cargar_partida(nombre):
-    """Carga una partida por nombre."""
     partidas = cargar_todas_partidas()
     return partidas.get(nombre)
+    
