@@ -1,73 +1,222 @@
-# utils.py — Colores, utilidades y guardado de partidas
+# utils.py
+# Life Simulator v0.6.0
+# Utilidades, colores y sistema de guardado
+
 
 import json
 import os
 
-# === COLORES ANSI ===
-NEGRO = "\033[40m"
-AZUL = "\033[44m"
-CYAN = "\033[46m"
-BLANCO = "\033[97m"
-AMARILLO = "\033[93m"
-VERDE = "\033[92m"
-ROJO = "\033[91m"
-MAGENTA = "\033[95m"
+
+# =========================
+# COLORES
+# =========================
+
 RESET = "\033[0m"
 BOLD = "\033[1m"
 
+ROJO = "\033[91m"
+VERDE = "\033[92m"
+AMARILLO = "\033[93m"
+CYAN = "\033[96m"
+BLANCO = "\033[97m"
+
+
+# =========================
+# ARCHIVO DE PARTIDAS
+# =========================
+
+ARCHIVO_PARTIDAS = os.path.join(
+    os.path.dirname(
+        os.path.abspath(__file__)
+    ),
+    "life_sim_partidas.json"
+)
+
+
+# =========================
+# LIMPIAR PANTALLA
+# =========================
 
 def limpiar_pantalla():
-    print("\n" * 50)
+
+    os.system(
+        "cls"
+        if os.name == "nt"
+        else "clear"
+    )
 
 
-def caja(titulo, contenido, ancho=50):
-    linea = "═" * ancho
-    print(f"\n{BOLD}{CYAN}╔{linea}╗{RESET}")
-    print(f"{BOLD}{CYAN}║{RESET}{BLANCO}{titulo:^{ancho}}{RESET}{BOLD}{CYAN}║{RESET}")
-    print(f"{BOLD}{CYAN}╠{linea}╣{RESET}")
-    for linea_texto in contenido.split("\n"):
-        print(f"{BOLD}{CYAN}║{RESET} {linea_texto:<{ancho-2}} {BOLD}{CYAN}║{RESET}")
-    print(f"{BOLD}{CYAN}╚{linea}╝{RESET}\n")
+# =========================
+# CAJA DE TEXTO
+# =========================
+
+def caja(titulo, subtitulo=""):
+
+    print(
+        "\n" + "=" * 50
+    )
+
+    print(
+        titulo.center(50)
+    )
+
+    print(
+        "=" * 50
+    )
+
+    if subtitulo:
+
+        print(
+            subtitulo.center(50)
+        )
+
+    print(
+        "=" * 50
+    )
 
 
-def separador():
-    print(f"{BOLD}{CYAN}{'─' * 52}{RESET}")
+# =========================
+# CARGAR TODAS LAS PARTIDAS
+# =========================
 
+def cargar_partidas():
 
-# === GUARDADO DE PARTIDAS ===
+    if not os.path.exists(
+        ARCHIVO_PARTIDAS
+    ):
 
-ARCHIVO_PARTIDAS = "/storage/emulated/0/Download/life_sim_partidas.json"
-
-
-def guardar_partida(nombre, datos):
-    partidas = cargar_todas_partidas()
-    partidas[nombre] = datos
-    with open(ARCHIVO_PARTIDAS, "w", encoding="utf-8") as f:
-        json.dump(partidas, f, indent=4, ensure_ascii=False)
-    print(f"\n{VERDE}💾 Partida '{nombre}' guardada.{RESET}")
-
-
-def cargar_todas_partidas():
-    if not os.path.exists(ARCHIVO_PARTIDAS):
         return {}
-    with open(ARCHIVO_PARTIDAS, "r", encoding="utf-8") as f:
-        return json.load(f)
 
+    try:
+
+        with open(
+            ARCHIVO_PARTIDAS,
+            "r",
+            encoding="utf-8"
+        ) as archivo:
+
+            datos = json.load(
+                archivo
+            )
+
+            if isinstance(
+                datos,
+                dict
+            ):
+
+                return datos
+
+            return {}
+
+    except (
+        json.JSONDecodeError,
+        OSError
+    ):
+
+        return {}
+
+
+# =========================
+# GUARDAR TODAS LAS PARTIDAS
+# =========================
+
+def guardar_partidas(
+    partidas
+):
+
+    with open(
+        ARCHIVO_PARTIDAS,
+        "w",
+        encoding="utf-8"
+    ) as archivo:
+
+        json.dump(
+            partidas,
+            archivo,
+            ensure_ascii=False,
+            indent=4
+        )
+
+
+# =========================
+# GUARDAR PARTIDA
+# =========================
+
+def guardar_partida(
+    nombre,
+    personaje,
+    alma
+):
+
+    partidas = cargar_partidas()
+
+    partidas[nombre] = {
+        "personaje":
+            personaje.convertir_a_dict(
+                nombre
+            ),
+
+        "alma":
+            alma.convertir_a_dict()
+    }
+
+    guardar_partidas(
+        partidas
+    )
+
+    return True
+
+
+# =========================
+# LISTAR PARTIDAS
+# =========================
 
 def listar_partidas():
-    partidas = cargar_todas_partidas()
+
+    partidas = cargar_partidas()
+
     if not partidas:
-        print(f"\n{AMARILLO}No hay partidas guardadas.{RESET}")
-        return None
-    print(f"\n{BOLD}{AMARILLO}📁 PARTIDAS GUARDADAS:{RESET}")
-    for i, nombre in enumerate(partidas.keys(), 1):
-        p = partidas[nombre]
-        estado = "💀 Muerto" if p.get("muerto") else "🟢 Vivo"
-        print(f"  {CYAN}[{i}]{RESET} {nombre} — {estado} a los {p['edad']} años")
-    print(f"\n{BLANCO}Escribe el número para cargar.{RESET}")
-    return list(partidas.keys())
+
+        return []
+
+    return list(
+        partidas.keys()
+    )
 
 
-def cargar_partida(nombre):
-    partidas = cargar_todas_partidas()
-    return partidas.get(nombre)
+# =========================
+# CARGAR PARTIDA
+# =========================
+
+def cargar_partida(
+    nombre
+):
+
+    partidas = cargar_partidas()
+
+    return partidas.get(
+        nombre
+    )
+
+
+# =========================
+# ELIMINAR PARTIDA
+# =========================
+
+def eliminar_partida(
+    nombre
+):
+
+    partidas = cargar_partidas()
+
+    if nombre not in partidas:
+
+        return False
+
+    del partidas[nombre]
+
+    guardar_partidas(
+        partidas
+    )
+
+    return True
